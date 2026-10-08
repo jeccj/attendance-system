@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}教师工作台 · 课堂签到{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div><div class="eyebrow">TEACHER WORKSPACE</div><h1>教师工作台</h1></div>
+    <div class="heading-note">一节课，一次签到。</div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat"><span>正在签到</span><strong>{{ stats.active }}<small>场</small></strong></div>
+    <div class="stat"><span>累计签到</span><strong>{{ stats.total }}<small>场</small></strong></div>
+    <div class="stat"><span>签到记录</span><strong>{{ stats.records }}<small>条</small></strong></div>
+  </div>
+  <div class="dashboard-grid">
+    <section class="card create-card">
+      <div class="section-heading"><h2>发起签到</h2><span class="step-label">NEW</span></div>
+      <form class="form-stack" method="post" action="{{ url_for('create_session') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="course_name">课程名称</label>
+          <input id="course_name" name="course_name" placeholder="例如：软件工程" maxlength="50" required>
+        </div>
+        <div class="field">
+          <label for="title">签到主题</label>
+          <input id="title" name="title" placeholder="例如：实验一课堂签到" maxlength="80" required>
+        </div>
+        <div class="field">
+          <label for="duration">有效时长</label>
+          <select id="duration" name="duration">
+            <option value="5">5 分钟</option><option value="10" selected>10 分钟</option>
+            <option value="15">15 分钟</option><option value="30">30 分钟</option><option value="60">60 分钟</option>
+          </select>
+        </div>
+        <button class="button primary full-width" type="submit" data-submit-text="正在发起…">生成签到码</button>
+      </form>
+    </section>
+    <section class="card history-card">
+      <div class="section-heading"><h2>签到列表</h2><span class="muted">{{ stats.total }} 场</span></div>
+      {% if items %}
+        <div class="session-list">
+          {% for item in items %}
+          <a class="session-item" href="{{ url_for('session_detail', session_id=item.id) }}">
+            <div class="session-topline"><span class="course-label">{{ item.course_name }}</span><span class="badge {{ 'badge-active' if session_is_open(item) else 'badge-ended' }}">{{ '进行中' if session_is_open(item) else '已结束' }}</span></div>
+            <h3>{{ item.title }}</h3>
+            <div class="session-meta"><span>{{ item.created_at | localtime }} 发起</span><span><strong>{{ item.attendance_count }}</strong> 人已签到</span></div>
+          </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state"><span class="empty-mark" aria-hidden="true">＋</span><h3>还没有签到</h3><p>填写课程和主题，发起第一次签到。</p></div>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}

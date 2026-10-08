@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}签到成功 · 课堂签到{% endblock %}
+{% block page_class %}narrow-page{% endblock %}
+{% block content %}
+  <section class="card checkin-card success-card">
+    <div class="success-mark" aria-hidden="true">✓</div>
+    <h1>签到成功</h1>
+    <p class="intro">{{ receipt.name }}，你的签到已记录。</p>
+    <dl class="receipt">
+      <div><dt>课程</dt><dd>{{ receipt.course_name }}</dd></div>
+      <div><dt>签到主题</dt><dd>{{ receipt.title }}</dd></div>
+      <div><dt>学号</dt><dd class="mono">{{ receipt.student_id }}</dd></div>
+      <div><dt>签到时间</dt><dd>{{ receipt.checked_at | localtime('%Y-%m-%d %H:%M:%S') }}</dd></div>
+    </dl>
+    <a class="button secondary full-width" href="{{ url_for('checkin') }}">返回签到页</a>
+  </section>
+{% endblock %}

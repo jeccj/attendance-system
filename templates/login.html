@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}教师登录 · 课堂签到{% endblock %}
+{% block page_class %}narrow-page{% endblock %}
+{% block content %}
+  <section class="card checkin-card">
+    <div class="eyebrow">TEACHER WORKSPACE</div>
+    <h1>教师登录</h1>
+    <p class="intro">发起签到，查看同学们的签到记录。</p>
+    <form class="form-stack" method="post" action="{{ url_for('login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="username">账号</label>
+        <input id="username" name="username" placeholder="请输入教师账号" maxlength="50" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="password">密码</label>
+        <input id="password" name="password" type="password" placeholder="请输入密码" maxlength="200" autocomplete="current-password" required>
+      </div>
+      <button class="button primary full-width" type="submit" data-submit-text="正在登录…">登录工作台</button>
+    </form>
+  </section>
+{% endblock %}

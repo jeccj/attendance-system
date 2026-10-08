@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="课堂签到：输入签到码、学号和姓名即可完成签到。">
+  <title>{% block title %}课堂签到{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script defer src="{{ url_for('static', filename='app.js') }}"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="{{ url_for('checkin') }}">
+        <span class="brand-mark" aria-hidden="true">✓</span>
+        <span>课堂签到</span>
+      </a>
+      <nav aria-label="主导航">
+        {% if session.get('teacher_id') %}
+          <a href="{{ url_for('dashboard') }}" {% if request.endpoint != 'checkin' %}class="nav-current"{% endif %}>教师工作台</a>
+          <a href="{{ url_for('checkin') }}">学生签到</a>
+          <form method="post" action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="nav-button" type="submit">退出</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('checkin') }}" {% if request.endpoint in ['checkin', 'success'] %}class="nav-current"{% endif %}>学生签到</a>
+          <a href="{{ url_for('login') }}" {% if request.endpoint == 'login' %}class="nav-current"{% endif %}>教师登录</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  <main class="page {% block page_class %}{% endblock %}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="messages" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="notice notice-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">课堂签到 <span>·</span> 时间均为北京时间</footer>
+</body>
+</html>

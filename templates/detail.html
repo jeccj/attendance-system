@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}{{ item.title }} · 课堂签到{% endblock %}
+{% block content %}
+  <a class="back-link" href="{{ url_for('dashboard') }}">返回工作台</a>
+  <div class="page-heading detail-heading">
+    <div><div class="eyebrow">{{ item.course_name }}</div><h1>{{ item.title }}</h1></div>
+    <span class="badge {{ 'badge-active' if session_is_open(item) else 'badge-ended' }}">{{ '进行中' if session_is_open(item) else '已结束' }}</span>
+  </div>
+  <div class="detail-grid">
+    <section class="card code-card">
+      <h2>{{ '本次签到码' if session_is_open(item) else '本次签到已结束' }}</h2>
+      <div class="display-code mono">{{ item.code }}</div>
+      <p class="code-caption">{{ ('有效至 ' ~ (item.ends_at | localtime('%H:%M'))) if session_is_open(item) else '签到码已失效' }}</p>
+      {% if session_is_open(item) %}
+        <div class="code-actions">
+          <button class="button secondary" type="button" data-copy="{{ item.code }}">复制签到码</button>
+          <a class="button secondary" href="{{ url_for('checkin', code=item.code) }}" target="_blank" rel="noopener">打开签到页</a>
+        </div>
+        <form method="post" action="{{ url_for('close_session', session_id=item.id) }}" data-confirm="确定结束本次签到吗？结束后同学将无法继续签到。">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="button danger-quiet full-width" type="submit">提前结束签到</button>
+        </form>
+      {% endif %}
+      <dl class="compact-info"><div><dt>发起时间</dt><dd>{{ item.created_at | localtime('%m-%d %H:%M') }}</dd></div><div><dt>截止时间</dt><dd>{{ item.ends_at | localtime('%m-%d %H:%M') }}</dd></div></dl>
+    </section>
+    <section class="card records-card">
+      <div class="section-heading records-heading"><div><h2>签到记录</h2><p class="record-count"><strong>{{ records | length }}</strong> 人已签到</p></div><div class="record-actions"><a class="button secondary button-small" href="{{ url_for('session_detail', session_id=item.id) }}">刷新</a><a class="button primary button-small" href="{{ url_for('export_csv', session_id=item.id) }}">导出 CSV</a></div></div>
+      {% if records %}
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">序号</th><th scope="col">学号</th><th scope="col">姓名</th><th scope="col">签到时间</th></tr></thead>
+            <tbody>{% for row in records %}<tr><td class="muted">{{ loop.index }}</td><td class="mono">{{ row.student_id }}</td><td>{{ row.name }}</td><td class="time-cell">{{ row.checked_at | localtime('%H:%M:%S') }}</td></tr>{% endfor %}</tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state"><span class="empty-mark" aria-hidden="true">✓</span><h3>等待同学签到</h3><p>将签到码告诉同学，点击刷新查看记录。</p></div>
+      {% endif %}
+      <p class="table-note">记录按签到时间排序。</p>
+    </section>
+  </div>
+{% endblock %}

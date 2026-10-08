@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}操作提示 · 课堂签到{% endblock %}
+{% block page_class %}narrow-page{% endblock %}
+{% block content %}
+  <section class="card checkin-card"><div class="eyebrow">PLEASE TRY AGAIN</div><h1>操作未完成</h1><p class="intro">{{ message }}</p><a class="button primary full-width" href="{{ url_for('dashboard') if session.get('teacher_id') else url_for('checkin') }}">返回首页</a></section>
+{% endblock %}
