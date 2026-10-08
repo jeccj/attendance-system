@@ -9,6 +9,7 @@
   <meta name="theme-color" content="#161618" media="(prefers-color-scheme: dark)">
   <title>{% block title %}课堂签到{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <script defer src="{{ url_for('static', filename='app.js') }}"></script>
 </head>
@@ -26,6 +27,10 @@
           {% set teacher_page = request.endpoint in ['login', 'dashboard', 'session_detail', 'create_session', 'close_session'] %}
           <a href="{{ url_for('dashboard') if session.get('teacher_id') else url_for('login') }}" {% if teacher_page %}class="nav-current" aria-current="page"{% endif %}>{{ icon('grid', 16) }}<span>{{ '教师工作台' if session.get('teacher_id') else '教师登录' }}</span></a>
         </div>
+        <button class="icon-button theme-toggle" type="button" data-theme-toggle role="switch" aria-label="夜晚模式" aria-checked="false" title="切换到夜晚模式" hidden>
+          {{ icon('moon', 19, 'theme-icon-dark') }}
+          {{ icon('sun', 20, 'theme-icon-light') }}
+        </button>
         {% if session.get('teacher_id') %}
           <form method="post" action="{{ url_for('logout') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
