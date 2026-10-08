@@ -1,17 +1,21 @@
 {% extends 'base.html' %}
 {% block title %}签到成功 · 课堂签到{% endblock %}
-{% block page_class %}narrow-page{% endblock %}
+{% block page_class %}receipt-page{% endblock %}
 {% block content %}
-  <section class="card checkin-card success-card">
-    <div class="success-mark" aria-hidden="true">✓</div>
-    <h1>签到成功</h1>
-    <p class="intro">{{ receipt.name }}，你的签到已记录。</p>
+  <section class="card receipt-card" aria-labelledby="success-title">
+    <div class="success-mark">{{ icon('check', 38) }}</div>
+    <div class="eyebrow">已记录 · 出勤回执</div>
+    <h1 id="success-title">签到成功。</h1>
+    <p class="intro">{{ receipt.name }}，今天也要学有所获。</p>
+    <div class="receipt-course"><span class="feature-icon">{{ icon('book', 22) }}</span><div><strong>{{ receipt.course_name }}</strong><span>{{ receipt.title }}</span></div></div>
     <dl class="receipt">
-      <div><dt>课程</dt><dd>{{ receipt.course_name }}</dd></div>
-      <div><dt>签到主题</dt><dd>{{ receipt.title }}</dd></div>
+      <div><dt>姓名</dt><dd>{{ receipt.name }}</dd></div>
       <div><dt>学号</dt><dd class="mono">{{ receipt.student_id }}</dd></div>
       <div><dt>签到时间</dt><dd>{{ receipt.checked_at | localtime('%Y-%m-%d %H:%M:%S') }}</dd></div>
+      <div><dt>签到状态</dt><dd class="success-text">{{ icon('check', 15) }} 已签到</dd></div>
     </dl>
-    <a class="button secondary full-width" href="{{ url_for('checkin') }}">返回签到页</a>
+    <p class="receipt-note">本次签到已保存，无需重复提交。</p>
+    <a class="button primary full-width" href="{{ url_for('checkin') }}">返回签到页 {{ icon('arrow', 17) }}</a>
+    <div class="receipt-bottom">{{ icon('shield', 14) }} 课堂签到 · 电子回执</div>
   </section>
 {% endblock %}

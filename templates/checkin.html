@@ -1,27 +1,51 @@
 {% extends 'base.html' %}
-{% block page_class %}narrow-page{% endblock %}
+{% block body_class %}student-page{% endblock %}
+{% block page_class %}welcome-page{% endblock %}
 {% block content %}
-  <section class="card checkin-card">
-    <div class="eyebrow">STUDENT CHECK-IN</div>
-    <h1>来上课，签个到。</h1>
-    <p class="intro">填写老师提供的签到码和你的信息。</p>
-    <form class="form-stack" method="post" action="{{ url_for('checkin') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="field">
-        <label for="code">签到码</label>
-        <input class="code-input" id="code" name="code" value="{{ values.code }}" type="text" placeholder="000000" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" autocomplete="off" required aria-describedby="code-hint">
-        <span class="field-hint" id="code-hint">6 位数字，签到结束后失效</span>
+  <div class="welcome-layout">
+    <section class="welcome-story" aria-labelledby="welcome-title">
+      <div class="eyebrow"><span class="tiny-dot"></span> 每一堂课，都值得准时相见</div>
+      <h1 id="welcome-title">把时间，<br>留给<span class="accent-text">课堂。</span></h1>
+      <p class="welcome-description">一次简单的签到，<br>开启今天的学习时光。</p>
+      <div class="classroom-art" aria-hidden="true">
+        <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
+        <div class="art-calendar">
+          <div class="calendar-binding"><span></span><span></span></div>
+          <div class="calendar-heading"><span>CLASS TIME</span>{{ icon('book', 19) }}</div>
+          <div class="calendar-check">{{ icon('check', 55) }}</div>
+          <div class="calendar-bottom"><span>新的一课</span><span>准备就绪</span></div>
+        </div>
+        <div class="art-badge">{{ icon('check', 16) }} 准时，就很好。</div>
+        <div class="art-spark spark-one">+</div><div class="art-spark spark-two">+</div>
       </div>
-      <div class="field">
-        <label for="student_id">学号</label>
-        <input id="student_id" name="student_id" value="{{ values.student_id }}" placeholder="请输入学号" inputmode="numeric" pattern="[0-9]{4,24}" minlength="4" maxlength="24" autocomplete="off" required>
-      </div>
-      <div class="field">
-        <label for="name">姓名</label>
-        <input id="name" name="name" value="{{ values.name }}" placeholder="请输入姓名" maxlength="30" autocomplete="name" required>
-      </div>
-      <button class="button primary full-width" type="submit" data-submit-text="正在提交…">确认签到</button>
-    </form>
-    <p class="card-note">同一学号在每次签到中只需提交一次。</p>
-  </section>
+      <div class="story-note">{{ icon('shield', 17) }} 仅需签到码、学号与姓名</div>
+    </section>
+    <section class="card entry-card" aria-labelledby="checkin-title">
+      <div class="card-heading-icon">{{ icon('book', 25) }}</div>
+      <h2 id="checkin-title">学生签到</h2>
+      <p class="intro">输入老师提供的签到码，完成本次签到。</p>
+      <form class="form-stack" method="post" action="{{ url_for('checkin') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field code-field">
+          <label for="code">签到码<span class="label-detail">6 位数字</span></label>
+          <div class="code-entry" data-code-entry>
+            <input class="code-input" id="code" name="code" value="{{ values.code }}" type="text" placeholder="000000" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" autocomplete="one-time-code" required aria-describedby="code-hint" spellcheck="false">
+            <div class="code-slots" aria-hidden="true" hidden>{% for _ in range(6) %}<span class="code-slot"></span>{% endfor %}</div>
+          </div>
+          <span class="field-hint" id="code-hint">签到码仅在老师设置的时段内有效。</span>
+        </div>
+        <div class="field">
+          <label for="student_id">学号</label>
+          <input id="student_id" name="student_id" value="{{ values.student_id }}" placeholder="输入你的学号" inputmode="numeric" pattern="[0-9]{4,24}" minlength="4" maxlength="24" autocomplete="off" required aria-describedby="student-id-hint">
+          <span id="student-id-hint" class="sr-only">4 至 24 位数字，保留开头的零。</span>
+        </div>
+        <div class="field">
+          <label for="name">姓名</label>
+          <input id="name" name="name" value="{{ values.name }}" placeholder="输入你的姓名" maxlength="30" autocomplete="name" required>
+        </div>
+        <button class="button primary full-width" type="submit" data-submit-text="正在提交…"><span class="button-label">确认签到</span>{{ icon('arrow', 18) }}</button>
+      </form>
+      <p class="card-note">{{ icon('lock', 14) }} 同一学号，每次签到只需提交一次。</p>
+    </section>
+  </div>
 {% endblock %}

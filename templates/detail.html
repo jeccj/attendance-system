@@ -1,41 +1,57 @@
 {% extends 'base.html' %}
 {% block title %}{{ item.title }} · 课堂签到{% endblock %}
+{% block page_class %}workspace-page{% endblock %}
 {% block content %}
-  <a class="back-link" href="{{ url_for('dashboard') }}">返回工作台</a>
+  {% set is_open = session_is_open(item) %}
+  <a class="back-link" href="{{ url_for('dashboard') }}">{{ icon('back', 16) }} 返回工作台</a>
   <div class="page-heading detail-heading">
-    <div><div class="eyebrow">{{ item.course_name }}</div><h1>{{ item.title }}</h1></div>
-    <span class="badge {{ 'badge-active' if session_is_open(item) else 'badge-ended' }}">{{ '进行中' if session_is_open(item) else '已结束' }}</span>
+    <div><div class="eyebrow">{{ item.course_name }}</div><h1>{{ item.title }}</h1><p class="heading-description">{{ item.created_at | localtime('%Y年%m月%d日') }} · 课堂签到</p></div>
+    <span class="badge badge-large {{ 'badge-active' if is_open else 'badge-ended' }}" data-session-end="{{ item.ends_at }}" data-closed="{{ item.is_closed }}" data-session-status><span class="status-dot"></span><span data-status-label>{{ '进行中' if is_open else '已结束' }}</span></span>
   </div>
   <div class="detail-grid">
-    <section class="card code-card">
-      <h2>{{ '本次签到码' if session_is_open(item) else '本次签到已结束' }}</h2>
-      <div class="display-code mono">{{ item.code }}</div>
-      <p class="code-caption">{{ ('有效至 ' ~ (item.ends_at | localtime('%H:%M'))) if session_is_open(item) else '签到码已失效' }}</p>
-      {% if session_is_open(item) %}
-        <div class="code-actions">
-          <button class="button secondary" type="button" data-copy="{{ item.code }}">复制签到码</button>
-          <a class="button secondary" href="{{ url_for('checkin', code=item.code) }}" target="_blank" rel="noopener">打开签到页</a>
+    <section class="card code-card {{ 'code-card-ended' if not is_open }}" data-session-panel data-session-end="{{ item.ends_at }}" data-session-start="{{ item.created_at }}" data-closed="{{ item.is_closed }}" aria-labelledby="code-title">
+      <div class="code-card-top"><span class="card-heading-icon">{{ icon('grid', 23) }}</span><span class="small-label">课堂签到码</span></div>
+      <h2 id="code-title" data-code-title>{{ '分享签到码，邀请同学签到。' if is_open else '本次签到已结束。' }}</h2>
+      <div class="display-code mono" aria-label="签到码 {{ item.code }}">{{ item.code[:3] }}<span>{{ item.code[3:] }}</span></div>
+      <p class="code-caption" data-code-caption>{{ '将这 6 位数字告诉同学即可。' if is_open else '签到码已失效，记录已保留。' }}</p>
+      <div class="countdown-panel">
+        <div class="countdown-label">{{ icon('clock', 17) }}<span data-countdown-label>{{ '剩余签到时间' if is_open else '签到状态' }}</span><strong data-countdown>{{ ('截至 ' ~ (item.ends_at | localtime('%H:%M'))) if is_open else '已结束' }}</strong></div>
+        <div class="code-progress" aria-hidden="true"><span data-time-progress></span></div>
+      </div>
+      {% if is_open %}
+        <div class="code-actions" data-open-only>
+          <button class="button primary full-width" type="button" data-copy="{{ item.code }}" data-copy-success="签到码已复制" hidden>{{ icon('copy', 17) }}<span class="button-label">复制签到码</span></button>
+          <div class="code-secondary-actions">
+            <button class="button secondary" type="button" data-copy="{{ url_for('checkin', code=item.code, _external=True) }}" data-copy-success="签到链接已复制" hidden>{{ icon('link', 16) }}<span class="button-label">复制链接</span></button>
+            <a class="button secondary" href="{{ url_for('checkin', code=item.code) }}" target="_blank" rel="noopener">打开签到页 {{ icon('arrow', 16) }}</a>
+          </div>
         </div>
-        <form method="post" action="{{ url_for('close_session', session_id=item.id) }}" data-confirm="确定结束本次签到吗？结束后同学将无法继续签到。">
+      {% endif %}
+      <dl class="compact-info"><div><dt>发起时间</dt><dd>{{ item.created_at | localtime('%m月%d日 %H:%M') }}</dd></div><div><dt>截止时间</dt><dd>{{ item.ends_at | localtime('%m月%d日 %H:%M') }}</dd></div></dl>
+      {% if is_open %}
+        <form class="close-form" method="post" action="{{ url_for('close_session', session_id=item.id) }}" data-open-only data-confirm="结束后，同学将无法继续签到。已提交的记录会保留。">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="button danger-quiet full-width" type="submit">提前结束签到</button>
+          <button class="button danger-quiet full-width" type="submit" data-submit-text="正在结束…"><span class="button-label">提前结束签到</span></button>
         </form>
       {% endif %}
-      <dl class="compact-info"><div><dt>发起时间</dt><dd>{{ item.created_at | localtime('%m-%d %H:%M') }}</dd></div><div><dt>截止时间</dt><dd>{{ item.ends_at | localtime('%m-%d %H:%M') }}</dd></div></dl>
+      <noscript><p class="field-hint">刷新页面可查看最新签到状态。</p></noscript>
     </section>
-    <section class="card records-card">
-      <div class="section-heading records-heading"><div><h2>签到记录</h2><p class="record-count"><strong>{{ records | length }}</strong> 人已签到</p></div><div class="record-actions"><a class="button secondary button-small" href="{{ url_for('session_detail', session_id=item.id) }}">刷新</a><a class="button primary button-small" href="{{ url_for('export_csv', session_id=item.id) }}">导出 CSV</a></div></div>
+    <section class="card records-card" aria-labelledby="records-title">
+      <div class="section-heading records-heading"><div><h2 id="records-title">签到记录 <span class="count-pill">{{ records | length }}</span></h2><p class="section-description">每一位到场的同学，都有迹可循。</p></div><div class="record-actions"><a class="button secondary button-small" href="{{ url_for('session_detail', session_id=item.id) }}">{{ icon('refresh', 16) }} 刷新</a><a class="button primary button-small" href="{{ url_for('export_csv', session_id=item.id) }}">{{ icon('download', 16) }} 导出 CSV</a></div></div>
       {% if records %}
-        <div class="table-wrap">
+        <div class="records-toolbar" data-record-tools hidden><div class="search-field">{{ icon('search', 17) }}<input type="search" data-record-search aria-label="搜索学号或姓名" placeholder="搜索学号或姓名"></div><span class="muted" data-record-match aria-live="polite">共 {{ records | length }} 位同学</span></div>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="签到明细，可横向滚动">
           <table>
-            <thead><tr><th scope="col">序号</th><th scope="col">学号</th><th scope="col">姓名</th><th scope="col">签到时间</th></tr></thead>
-            <tbody>{% for row in records %}<tr><td class="muted">{{ loop.index }}</td><td class="mono">{{ row.student_id }}</td><td>{{ row.name }}</td><td class="time-cell">{{ row.checked_at | localtime('%H:%M:%S') }}</td></tr>{% endfor %}</tbody>
+            <caption class="sr-only">本次课堂签到记录，按签到时间排序</caption>
+            <thead><tr><th scope="col" class="index-cell">序号</th><th scope="col">学生</th><th scope="col">学号</th><th scope="col">签到时间</th><th scope="col" class="attendance-status-cell">状态</th></tr></thead>
+            <tbody>{% for row in records %}<tr data-record-row data-searchable="{{ row.student_id }} {{ row.name }}"><td class="index-cell muted">{{ '%02d' | format(loop.index) }}</td><td><div class="student-cell"><span class="student-avatar" aria-hidden="true">{{ row.name[:1] }}</span><span>{{ row.name }}</span></div></td><td class="mono student-id-cell">{{ row.student_id }}</td><td class="time-cell">{{ row.checked_at | localtime('%H:%M:%S') }}</td><td class="attendance-status-cell"><span class="attendance-status">{{ icon('check', 14) }} 已签到</span></td></tr>{% endfor %}</tbody>
           </table>
         </div>
+        <div class="empty-state filtered-empty" data-record-empty hidden><span class="empty-mark">{{ icon('search', 26) }}</span><h3>没有匹配的同学</h3><p>请检查姓名或学号，重新搜索。</p></div>
       {% else %}
-        <div class="empty-state"><span class="empty-mark" aria-hidden="true">✓</span><h3>等待同学签到</h3><p>将签到码告诉同学，点击刷新查看记录。</p></div>
+        <div class="empty-state records-empty"><span class="empty-mark">{{ icon('people', 32) }}</span><h3>{{ '等待第一位同学签到' if is_open else '本次暂无签到记录' }}</h3><p>{{ '分享签到码后，点击刷新查看最新记录。' if is_open else '本次签到结束前，没有同学提交签到。' }}</p></div>
       {% endif %}
-      <p class="table-note">记录按签到时间排序。</p>
+      <div class="list-footer"><span>{{ icon('clock', 14) }} 按签到时间排序</span><span>刷新以获取最新记录</span></div>
     </section>
   </div>
 {% endblock %}

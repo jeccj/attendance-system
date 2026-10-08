@@ -1,22 +1,39 @@
 {% extends 'base.html' %}
 {% block title %}教师登录 · 课堂签到{% endblock %}
-{% block page_class %}narrow-page{% endblock %}
+{% block page_class %}welcome-page{% endblock %}
 {% block content %}
-  <section class="card checkin-card">
-    <div class="eyebrow">TEACHER WORKSPACE</div>
-    <h1>教师登录</h1>
-    <p class="intro">发起签到，查看同学们的签到记录。</p>
-    <form class="form-stack" method="post" action="{{ url_for('login') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="field">
-        <label for="username">账号</label>
-        <input id="username" name="username" placeholder="请输入教师账号" maxlength="50" autocomplete="username" required>
+  <div class="welcome-layout login-layout">
+    <section class="welcome-story" aria-labelledby="login-welcome">
+      <div class="eyebrow"><span class="tiny-dot"></span> 教师工作空间</div>
+      <h1 id="login-welcome">课堂有序，<br>教学<span class="accent-text">从容。</span></h1>
+      <p class="welcome-description">从发起签到到查看记录，<br>让课堂管理轻一点。</p>
+      <div class="feature-list">
+        <div><span class="feature-icon">{{ icon('plus', 21) }}</span><span><strong>轻松发起</strong><small>选择课程与时长，即刻生成签到码。</small></span></div>
+        <div><span class="feature-icon">{{ icon('people', 21) }}</span><span><strong>清晰掌握</strong><small>查看每次签到与学生出勤记录。</small></span></div>
+        <div><span class="feature-icon">{{ icon('download', 21) }}</span><span><strong>随时导出</strong><small>下载 CSV，方便后续整理。</small></span></div>
       </div>
-      <div class="field">
-        <label for="password">密码</label>
-        <input id="password" name="password" type="password" placeholder="请输入密码" maxlength="200" autocomplete="current-password" required>
-      </div>
-      <button class="button primary full-width" type="submit" data-submit-text="正在登录…">登录工作台</button>
-    </form>
-  </section>
+    </section>
+    <section class="card entry-card login-card" aria-labelledby="login-title">
+      <div class="card-heading-icon">{{ icon('lock', 25) }}</div>
+      <h2 id="login-title">欢迎回来。</h2>
+      <p class="intro">登录教师账号，开始管理你的课堂。</p>
+      <form class="form-stack" method="post" action="{{ url_for('login') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="username">教师账号</label>
+          <input id="username" name="username" value="{{ request.form.get('username', '') }}" placeholder="输入教师账号" maxlength="50" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="password">密码</label>
+          <div class="password-field">
+            <input id="password" name="password" type="password" placeholder="输入密码" maxlength="200" autocomplete="current-password" required>
+            <button class="icon-button password-toggle" type="button" data-toggle-password aria-label="显示密码" aria-controls="password" aria-pressed="false" hidden>{{ icon('eye', 19) }}</button>
+          </div>
+        </div>
+        <button class="button primary full-width" type="submit" data-submit-text="正在登录…"><span class="button-label">登录工作台</span>{{ icon('arrow', 18) }}</button>
+      </form>
+      <p class="card-note">{{ icon('shield', 15) }} 教师专属工作空间</p>
+      <a class="text-link login-back" href="{{ url_for('checkin') }}">我是学生，前往签到 {{ icon('chevron', 14) }}</a>
+    </section>
+  </div>
 {% endblock %}
